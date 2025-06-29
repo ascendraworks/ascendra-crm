@@ -4,7 +4,7 @@ import { supabase, Lead } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import Layout from '../components/Layout';
 import FunnelChart from '../components/FunnelChart';
-import MetricCard from '../components/TrendChart';
+import MetricCard from '../components/MetricCard';
 import UrgencyAlerts from '../components/UrgencyAlerts';
 import { Plus, TrendingUp, DollarSign, Users, ArrowRight, BarChart3, Target, Clock, Info, Zap, AlertTriangle } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -54,15 +54,15 @@ const Dashboard: React.FC = () => {
       setLeads(leads);
 
       const totalLeads = leads.length;
-      const totalValue = leads.reduce((sum, lead) => sum + (lead.deal_value || 0), 0);
-      const closedWonLeads = leads.filter(lead => lead.stage === 'Closed Won');
+      const totalValue = leads.reduce((sum: number, lead: Lead) => sum + (lead.deal_value || 0), 0);
+      const closedWonLeads = leads.filter((lead: Lead) => lead.stage === 'Closed Won');
       const closedWonCount = closedWonLeads.length;
       const conversionRate = totalLeads > 0 ? Math.round((closedWonCount / totalLeads) * 100) : 0;
       const avgDealSize = totalLeads > 0 ? Math.round(totalValue / totalLeads) : 0;
       
       // Calculate pipeline velocity (average days to close for won deals)
       const pipelineVelocity = closedWonLeads.length > 0 ? 
-        Math.round(closedWonLeads.reduce((sum, lead) => {
+        Math.round(closedWonLeads.reduce((sum: number, lead: Lead) => {
           const created = new Date(lead.created_at);
           const updated = new Date(lead.updated_at);
           const days = Math.floor((updated.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
@@ -72,7 +72,7 @@ const Dashboard: React.FC = () => {
       // Calculate stuck leads (leads in same stage for over 7 days)
       const now = new Date();
       const stuckThreshold = 7; // days
-      const stuckLeadsCount = leads.filter(lead => {
+      const stuckLeadsCount = leads.filter((lead: Lead) => {
         // Only count active stages (not closed)
         if (['Closed Won', 'Closed Lost'].includes(lead.stage)) return false;
         
@@ -86,7 +86,7 @@ const Dashboard: React.FC = () => {
         stageStats[stage] = { count: 0, value: 0 };
       });
 
-      leads.forEach(lead => {
+      leads.forEach((lead: Lead) => {
         if (stageStats[lead.stage]) {
           stageStats[lead.stage].count++;
           stageStats[lead.stage].value += lead.deal_value || 0;
@@ -140,13 +140,13 @@ const Dashboard: React.FC = () => {
     const stuckThreshold = 7; // days
     
     return leads
-      .filter(lead => {
+      .filter((lead: Lead) => {
         const updatedAt = new Date(lead.updated_at);
         const daysDiff = Math.floor((now.getTime() - updatedAt.getTime()) / (1000 * 60 * 60 * 24));
         return daysDiff > stuckThreshold && ['Contacted', 'Qualified'].includes(lead.stage);
       })
       .slice(0, 5)
-      .map(lead => {
+      .map((lead: Lead) => {
         const updatedAt = new Date(lead.updated_at);
         const daysStuck = Math.floor((now.getTime() - updatedAt.getTime()) / (1000 * 60 * 60 * 24));
         
@@ -239,26 +239,24 @@ const Dashboard: React.FC = () => {
                     <p className="text-slate-600 mt-1">Comprehensive funnel visualization with stage distribution and performance metrics</p>
                   </div>
                   
-                  {/* Action Buttons - Horizontally aligned, equal width */}
                   <div className="flex flex-col sm:flex-row gap-3 lg:gap-4">
-                    <Link
-                      to="/funnel"
-                      className="inline-flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg transform hover:scale-105 min-w-[160px]"
-                    >
-                      <BarChart3 className="h-4 w-4" />
-                      <span>Manage Pipeline</span>
-                    </Link>
-                    
-                    <button
-                      onClick={() => {
-                        window.location.href = '/funnel';
-                      }}
-                      className="inline-flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-lg hover:from-emerald-700 hover:to-green-700 transition-all duration-200 shadow-lg transform hover:scale-105 min-w-[160px]"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>Add New Lead</span>
-                    </button>
-                  </div>
+  <Link
+    to="/funnel"
+    className="inline-flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg transform hover:scale-105 min-w-[160px]"
+  >
+    <BarChart3 className="h-4 w-4" />
+    <span>Manage Pipeline</span>
+  </Link>
+
+  <Link
+    to="/funnel"
+    className="inline-flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-lg hover:from-emerald-700 hover:to-green-700 transition-all duration-200 shadow-lg transform hover:scale-105 min-w-[160px]"
+  >
+    <Plus className="h-4 w-4" />
+    <span>Add New Lead</span>
+  </Link>
+</div>
+
                 </div>
 
                 {/* Enhanced Funnel Chart with Pie Chart */}
@@ -376,8 +374,8 @@ const Dashboard: React.FC = () => {
                       </div>
                     </Link>
                     
-                    <button
-                      onClick={() => window.location.href = '/funnel'}
+                    <Link
+                      to="/funnel"
                       className="block w-full bg-white rounded-lg p-4 border border-slate-200 hover:border-green-300 hover:bg-green-50 transition-all duration-200 text-left group"
                     >
                       <div className="flex items-center space-x-3">
@@ -389,7 +387,7 @@ const Dashboard: React.FC = () => {
                           <p className="text-sm text-slate-600">Capture opportunities</p>
                         </div>
                       </div>
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
